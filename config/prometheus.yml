@@ -1,0 +1,9 @@
+global:
+  scrape_interval: 15s
+
+
+scrape_configs:
+  - job_name: 'sample_server_prom'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['sample_server_prom:3000']
