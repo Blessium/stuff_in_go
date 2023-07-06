@@ -1,0 +1,30 @@
+version: "3.8"
+
+networks:
+  prom_net:
+    driver: bridge
+
+services:
+  sample_server_prom:
+    build:
+      context: ../
+      dockerfile: config/sample_prom/Dockerfile
+    container_name: sample_server_prom
+    ports:
+      - 3000:3000
+    networks:
+      - prom_net
+
+  prometheus_server:
+    image: prom/prometheus:main
+    container_name: prometheus_server
+    depends_on: 
+      - sample_server_prom
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - 9090:9090
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+    networks:
+      - prom_net
