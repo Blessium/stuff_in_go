@@ -15,6 +15,17 @@ services:
     networks:
       - prom_net
 
+  rest_api_server:
+    build:
+      context: ../
+      dockerfile: config/rest_api/Dockerfile
+    container_name: rest_api_server 
+    ports:
+      - 8080:8080
+    networks:
+      - prom_net
+
+
   prometheus_server:
     image: prom/prometheus:main
     container_name: prometheus_server
