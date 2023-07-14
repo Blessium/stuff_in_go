@@ -25,6 +25,16 @@ services:
     networks:
       - prom_net
 
+  mongodb:
+    image: mongo
+    container_name: api-mongodb
+    depends_on:
+      - rest_api_server
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=blessium
+      - MONGO_INITDB_ROOT_PASSWORD=blessium
 
   prometheus_server:
     image: prom/prometheus:main

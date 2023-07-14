@@ -10,9 +10,11 @@ import (
 func main() {
     
     booksRepo, err := books.GetMongoRepository()
+
     if err != nil {
         panic(err.Error())
     }
+    
     booksService := books.GetService(booksRepo)
     book := api.GetBookHandler(booksService)
 

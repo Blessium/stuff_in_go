@@ -6,7 +6,7 @@ import (
     "context"
 )
 
-const uri=""
+const uri="mongodb://blessium:blessium@api-mongodb:27017/"
 
 func GetMongoDB() (*mongo.Client, error) {
 
