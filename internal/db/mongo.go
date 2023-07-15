@@ -8,7 +8,7 @@ import (
 
 const uri="mongodb://blessium:blessium@api-mongodb:27017/"
 
-func GetMongoDB() (*mongo.Client, error) {
+func GetMongoClient() (*mongo.Client, error) {
 
     serverApi := options.ServerAPI(options.ServerAPIVersion1)
     opts := options.Client().ApplyURI(uri).SetServerAPIOptions(serverApi)
