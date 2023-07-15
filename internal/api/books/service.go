@@ -2,7 +2,16 @@ package books
 
 import (
 	"context"
+	"time"
 )
+
+type Book struct {
+	ISBN      string
+	Title     string
+	Author    string
+	Published time.Time
+	Pages     uint
+}
 
 type IService interface {
 	Create(ctx context.Context, book Book) (Book, error)
@@ -12,29 +21,28 @@ type IService interface {
 }
 
 type Service struct {
-    bookRepository IRepository 
+	bookRepository IRepository
 }
 
 func GetService(b IRepository) Service {
-    return Service{
-        bookRepository: b,
-    }
+	return Service{
+		bookRepository: b,
+	}
 }
 
-
 func (s Service) Create(ctx context.Context, book Book) (Book, error) {
-    return book, nil
+	return book, nil
 }
 
 func (s Service) Update(ctx context.Context, book Book) (Book, error) {
-    return book, nil
+	return book, nil
 }
 
 func (s Service) Delete(ctx context.Context, isbn string) error {
-    return nil
+	return nil
 }
 
 func (s Service) Get(ctx context.Context, isbn string) (Book, error) {
-    book := Book {}
-    return book, nil
+	book := Book{}
+	return book, nil
 }
