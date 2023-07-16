@@ -3,6 +3,7 @@ package books
 import (
 	"context"
 	"time"
+    "fmt"
 )
 
 type Book struct {
@@ -31,6 +32,21 @@ func GetService(b IRepository) Service {
 }
 
 func (s Service) Create(ctx context.Context, book Book) (Book, error) {
+
+	dbModel := BookDB{
+		ISBN:   book.ISBN,
+		Title:  book.Title,
+		Pages:  book.Pages,
+		Author: book.Author,
+	}
+    dbModel.SetPublished(book.Published)
+
+    fmt.Println("Probably repository called")
+    _, err := s.bookRepository.Create(ctx, dbModel)
+	if err != nil {
+		return book, err
+	}
+
 	return book, nil
 }
 

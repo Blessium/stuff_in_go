@@ -3,17 +3,25 @@ package books
 import (
 	"context"
 	"errors"
+    "time"
+    "fmt"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type BookDB struct {
-	ISBN      primitive.ObjectID `bson:"_id"`
+	id        primitive.ObjectID `bson:"_id"`
+	ISBN      string             `bson:"ISBN"`
 	Title     string             `bson:"Title"`
 	Author    string             `bson:"Author"`
 	Published primitive.DateTime `bson:"Published"`
 	Pages     uint               `bson:"Pages"`
+}
+
+func (b *BookDB) SetPublished(p time.Time) {
+    b.Published = primitive.NewDateTimeFromTime(p)
 }
 
 type IRepository interface {
@@ -34,21 +42,16 @@ func GetMongoRepository(db *mongo.Collection) MongoRepository {
 }
 
 func (b MongoRepository) Create(ctx context.Context, book BookDB) (BookDB, error) {
-	if book.ISBN.IsZero() {
-		return book, errors.New("id is required for book model")
-	}
+    fmt.Println("PORCODDIO")
 	_, err := b.db.InsertOne(ctx, book)
 	if err != nil {
 		return book, err
 	}
+
 	return book, nil
 }
 
 func (b MongoRepository) Update(ctx context.Context, book BookDB) (BookDB, error) {
-	if book.ISBN.IsZero() {
-		return book, errors.New("id is required")
-	}
-
 	filter := bson.M{"_id": book.ISBN}
 	update := bson.M{"$set": bson.M{
 		"Title":     book.Title,
@@ -61,9 +64,9 @@ func (b MongoRepository) Update(ctx context.Context, book BookDB) (BookDB, error
 		return book, err
 	}
 
-    if res.MatchedCount == 0 {
-        return book, errors.New("element doesn't exist")
-    }
+	if res.MatchedCount == 0 {
+		return book, errors.New("element doesn't exist")
+	}
 	return book, nil
 }
 
