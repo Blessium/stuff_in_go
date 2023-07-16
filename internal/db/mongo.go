@@ -2,6 +2,7 @@ package db
 
 import (
     "go.mongodb.org/mongo-driver/mongo"
+    "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/mongo/options"
     "context"
 )
@@ -22,3 +23,12 @@ func GetMongoClient() (*mongo.Client, error) {
 }  
 
 
+func CreateIndex(c *mongo.Collection, field string, unique bool) error {
+    mod := mongo.IndexModel {
+        Keys: bson.M{field: 1},
+        Options: options.Index().SetUnique(unique),
+    }
+
+    _, err := c.Indexes().CreateOne(context.TODO(), mod)
+    return err
+}
