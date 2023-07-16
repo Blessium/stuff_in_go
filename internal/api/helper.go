@@ -1,10 +1,10 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
-    "encoding/json"
-    "io"
 )
 
 const maxBodyBytes = 1048576
@@ -16,18 +16,18 @@ func DecodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) err
 
 	r.Body = http.MaxBytesReader(w, r.Body, maxBodyBytes)
 
-    dec := json.NewDecoder(r.Body)
-    dec.DisallowUnknownFields()
+	dec := json.NewDecoder(r.Body)
+	dec.DisallowUnknownFields()
 
-    err := dec.Decode(&dst)
-    if err != nil {
-        return err
-    }
+	err := dec.Decode(&dst)
+	if err != nil {
+		return err
+	}
 
-    err = dec.Decode(&struct{}{})
-    if !errors.Is(err, io.EOF) {
-       return errors.New("Request body must contain only one entity") 
-    }
+	err = dec.Decode(&struct{}{})
+	if !errors.Is(err, io.EOF) {
+		return errors.New("Request body must contain only one entity")
+	}
 
 	return nil
 }

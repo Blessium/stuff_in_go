@@ -25,7 +25,7 @@ func HandlerRandomMetrics() *prometheus.Registry {
 		}
 	}
 
-    go bruh()
+	go bruh()
 
 	return reg
 }

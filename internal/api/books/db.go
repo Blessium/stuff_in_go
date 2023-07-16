@@ -3,8 +3,7 @@ package books
 import (
 	"context"
 	"errors"
-    "time"
-    "fmt"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -21,7 +20,7 @@ type BookDB struct {
 }
 
 func (b *BookDB) SetPublished(p time.Time) {
-    b.Published = primitive.NewDateTimeFromTime(p)
+	b.Published = primitive.NewDateTimeFromTime(p)
 }
 
 type IRepository interface {
@@ -42,7 +41,6 @@ func GetMongoRepository(db *mongo.Collection) MongoRepository {
 }
 
 func (b MongoRepository) Create(ctx context.Context, book BookDB) (BookDB, error) {
-    fmt.Println("PORCODDIO")
 	_, err := b.db.InsertOne(ctx, book)
 	if err != nil {
 		return book, err

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"net/http"
 	"time"
-    "fmt"
 
 	"github.com/blessium/metricsgo/internal/api"
 )
@@ -103,10 +102,9 @@ func (b Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			book, err := req.ToService()
 			if err != nil {
 				w.Write([]byte(err.Error()))
-                return
+				return
 			}
 
-            fmt.Println("Probably made a request")
 			if _, err := b.service.Create(context.TODO(), book); err != nil {
 				w.Write([]byte(err.Error()))
 				return

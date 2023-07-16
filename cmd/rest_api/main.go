@@ -7,7 +7,6 @@ import (
 	"github.com/blessium/metricsgo/internal/db"
 	"log"
 	"net/http"
-    "fmt"
 )
 
 func main() {
@@ -22,12 +21,11 @@ func main() {
 		}
 	}()
 
-    fmt.Println("Client mongodb got")
 	mongoDB := mongoClient.Database("api_server")
-    mongoCollection := mongoDB.Collection("Books")
-    if err := db.CreateIndex(mongoCollection, "ISBN", true); err != nil {
-        panic(err.Error())
-    }
+	mongoCollection := mongoDB.Collection("Books")
+	if err := db.CreateIndex(mongoCollection, "ISBN", true); err != nil {
+		panic(err.Error())
+	}
 
 	booksRepo := books.GetMongoRepository(mongoCollection)
 
@@ -46,6 +44,5 @@ func main() {
 		http.HandleFunc(endpoints, api.MultipleMiddleware(f, middleware...))
 	}
 
-    fmt.Println("Probably server started")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
