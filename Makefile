@@ -14,6 +14,10 @@ docker-build:
 docker-run: docker-build
 	docker compose -f ${CONFIG_DIR}/docker-compose.yml up -d
 
+docker-run-debug: docker-build
+	docker compose -f ${CONFIG_DIR}/docker-compose.yml up
+
+
 docker-clean:
 	docker compose -f ${CONFIG_DIR}/docker-compose.yml down --volumes --remove-orphans
 
