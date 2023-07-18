@@ -10,8 +10,16 @@ import (
 	"github.com/blessium/metricsgo/internal/api"
 )
 
+const timeLayout = "01/02/2006 15:05"
+
+// For bulk crud
 type Handler struct {
 	service IService
+}
+
+// For single book crud
+type SingleHandler struct {
+    service IService
 }
 
 type BookFullRequest struct {
@@ -46,8 +54,18 @@ func (b BookFullRequest) Validate() error {
 	return nil
 }
 
+func BookFromService(b Book) BookFullRequest {
+    return BookFullRequest {
+        ISBN: b.ISBN,
+        Title: b.Title,
+        Author: b.Author,
+        Published: b.Published.Format(timeLayout),
+        Pages: b.Pages,
+    }    
+}
+
 func (b BookFullRequest) ToService() (Book, error) {
-	p, err := time.Parse("01/02/2006 15:05", b.Published)
+	p, err := time.Parse(timeLayout, b.Published)
 	if err != nil {
 		return Book{}, errors.New("Wrong published date format (DD/MM/YY HH:MM)")
 	}
@@ -77,14 +95,35 @@ func GetHandler(service IService) Handler {
 	}
 }
 
+func GetSingleHandler(service IService) SingleHandler {
+    return SingleHandler {
+        service: service,
+    }
+}
+
 func (b Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	switch r.Method {
 	case "GET":
 		{
-			w.Write([]byte("Ciao"))
+            books, err := b.service.GetAll(context.TODO())
+            if err != nil {
+                w.Write([]byte(err.Error()))  
+                return
+            }
+
+            var booksFull []BookFullRequest
+            for _, book := range books {
+                booksFull = append(booksFull, BookFromService(book)) 
+            }
+             
+            resp, err := json.Marshal(booksFull)
+            if err != nil {
+                w.WriteHeader(http.StatusInternalServerError)
+                w.Write([]byte(err.Error()))
+            }
+			w.Write([]byte(resp))
 		}
-		// TODO: finish POST Request
 	case "POST":
 		{
 			req := &BookFullRequest{}
@@ -115,7 +154,7 @@ func (b Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	default:
 		{
-			w.Write([]byte("Message not allowed"))
+			w.Write([]byte("Method not allowed"))
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
 	}
