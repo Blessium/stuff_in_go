@@ -31,3 +31,9 @@ func DecodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) err
 
 	return nil
 }
+
+func ParsePathParam(r *http.Request) (string, error) {
+
+    return "", nil
+}
+ 

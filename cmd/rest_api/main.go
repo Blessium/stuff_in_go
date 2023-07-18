@@ -31,6 +31,7 @@ func main() {
 
 	booksService := books.GetService(booksRepo)
 	bookHandler := books.GetHandler(booksService)
+    bookSigleHandler := books.GetSingleHandler(booksService)
 
 	middleware := []api.Middleware{
 		api.LogMiddleware,
@@ -38,6 +39,7 @@ func main() {
 
 	endpoints := map[string]http.Handler{
 		"/books": bookHandler,
+        "/books/": bookSigleHandler,
 	}
 
 	for endpoints, f := range endpoints {

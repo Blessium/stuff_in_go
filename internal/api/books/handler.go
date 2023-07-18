@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/blessium/metricsgo/internal/api"
@@ -19,7 +20,7 @@ type Handler struct {
 
 // For single book crud
 type SingleHandler struct {
-    service IService
+	service IService
 }
 
 type BookFullRequest struct {
@@ -55,13 +56,13 @@ func (b BookFullRequest) Validate() error {
 }
 
 func BookFromService(b Book) BookFullRequest {
-    return BookFullRequest {
-        ISBN: b.ISBN,
-        Title: b.Title,
-        Author: b.Author,
-        Published: b.Published.Format(timeLayout),
-        Pages: b.Pages,
-    }    
+	return BookFullRequest{
+		ISBN:      b.ISBN,
+		Title:     b.Title,
+		Author:    b.Author,
+		Published: b.Published.Format(timeLayout),
+		Pages:     b.Pages,
+	}
 }
 
 func (b BookFullRequest) ToService() (Book, error) {
@@ -96,9 +97,9 @@ func GetHandler(service IService) Handler {
 }
 
 func GetSingleHandler(service IService) SingleHandler {
-    return SingleHandler {
-        service: service,
-    }
+	return SingleHandler{
+		service: service,
+	}
 }
 
 func (b Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -106,22 +107,22 @@ func (b Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		{
-            books, err := b.service.GetAll(context.TODO())
-            if err != nil {
-                w.Write([]byte(err.Error()))  
-                return
-            }
+			books, err := b.service.GetAll(context.TODO())
+			if err != nil {
+				w.Write([]byte(err.Error()))
+				return
+			}
 
-            var booksFull []BookFullRequest
-            for _, book := range books {
-                booksFull = append(booksFull, BookFromService(book)) 
-            }
-             
-            resp, err := json.Marshal(booksFull)
-            if err != nil {
-                w.WriteHeader(http.StatusInternalServerError)
-                w.Write([]byte(err.Error()))
-            }
+			var booksFull []BookFullRequest
+			for _, book := range books {
+				booksFull = append(booksFull, BookFromService(book))
+			}
+
+			resp, err := json.Marshal(booksFull)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(err.Error()))
+			}
 			w.Write([]byte(resp))
 		}
 	case "POST":
@@ -158,4 +159,39 @@ func (b Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
 	}
+}
+
+func (h SingleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	urlPath := r.URL.Path
+	bookISBN := urlPath[len("/books/"):]
+	if len(bookISBN) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("/books/{isbn} path param required"))
+		return
+	}
+
+	switch r.Method {
+	case "GET":
+		{
+            // TODO
+		}
+	case "UPDATE":
+		{
+            // TODO
+		}
+    case "POST":
+        {
+           // TODO 
+        }
+    case "DELETE":
+        {
+            // TODO
+        }
+	default:
+		{
+			w.Write([]byte("Method not allowed"))
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	}
+
 }
