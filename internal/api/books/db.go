@@ -52,9 +52,8 @@ func (b MongoRepository) Create(ctx context.Context, book BookDB) (BookDB, error
 }
 
 func (b MongoRepository) Update(ctx context.Context, book BookDB) (BookDB, error) {
-	filter := bson.M{"_id": book.id}
+	filter := bson.M{"ISBN": book.ISBN}
 	update := bson.M{"$set": bson.M{
-		"ISBN":      book.ISBN,
 		"Title":     book.Title,
 		"Published": book.Published,
 		"Pages":     book.Pages,
@@ -72,7 +71,7 @@ func (b MongoRepository) Update(ctx context.Context, book BookDB) (BookDB, error
 }
 
 func (b MongoRepository) Delete(ctx context.Context, isbn string) error {
-	filter := bson.M{"isbn": isbn}
+	filter := bson.M{"ISBN": isbn}
 	result, err := b.db.DeleteOne(ctx, filter)
 	if err != nil {
 		return err
@@ -85,7 +84,7 @@ func (b MongoRepository) Delete(ctx context.Context, isbn string) error {
 
 func (b MongoRepository) Get(ctx context.Context, isbn string) (BookDB, error) {
 	book := BookDB{}
-	filter := bson.M{"isbn": isbn}
+	filter := bson.M{"ISBN": isbn}
 	err := b.db.FindOne(ctx, filter).Decode(&book)
 	if err != nil {
 		return book, err

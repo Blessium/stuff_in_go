@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/blessium/metricsgo/internal/api"
@@ -68,11 +67,32 @@ func BookFromService(b Book) BookFullRequest {
 func (b BookFullRequest) ToService() (Book, error) {
 	p, err := time.Parse(timeLayout, b.Published)
 	if err != nil {
-		return Book{}, errors.New("Wrong published date format (DD/MM/YY HH:MM)")
+		return Book{}, errors.New("Wrong published date format (DD/MM/YYYY HH:MM)")
 	}
 
 	return Book{
 		ISBN:      b.ISBN,
+		Title:     b.Title,
+		Author:    b.Author,
+		Published: p,
+		Pages:     b.Pages,
+	}, nil
+}
+
+type BookUpdateRequest struct {
+	Title     string `json:"title"`
+	Author    string `json:"author"`
+	Published string `json:"published"`
+	Pages     uint   `json:"pages"`
+}
+
+func (b BookUpdateRequest) ToService() (Book, error) {
+	p, err := time.Parse(timeLayout, b.Published)
+	if err != nil {
+		return Book{}, errors.New("Wrong published date format (DD/MM/YYYY HH:MM)")
+	}
+
+	return Book{
 		Title:     b.Title,
 		Author:    b.Author,
 		Published: p,
@@ -162,8 +182,9 @@ func (b Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h SingleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	urlPath := r.URL.Path
+	urlPath := r.URL.RequestURI()
 	bookISBN := urlPath[len("/books/"):]
+
 	if len(bookISBN) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("/books/{isbn} path param required"))
@@ -173,20 +194,53 @@ func (h SingleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		{
-            // TODO
+			book, err := h.service.Get(context.TODO(), bookISBN)
+			if err != nil {
+				w.Write([]byte(err.Error()))
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			json, _ := json.Marshal(BookFromService(book))
+			w.Write(json)
 		}
-	case "UPDATE":
+	case "PUT":
 		{
-            // TODO
+			req := &BookUpdateRequest{}
+			if err := api.DecodeJSONBody(w, r, req); err != nil {
+				w.Write([]byte(err.Error()))
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+
+			book, err := req.ToService()
+			if err != nil {
+				w.Write([]byte(err.Error()))
+				return
+			}
+
+			book.ISBN = bookISBN
+
+			book, err = h.service.Update(context.TODO(), book)
+			if err != nil {
+				w.Write([]byte(err.Error()))
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			json, _ := json.Marshal(BookFromService(book))
+			w.Write(json)
 		}
-    case "POST":
-        {
-           // TODO 
-        }
-    case "DELETE":
-        {
-            // TODO
-        }
+	case "POST":
+		{
+			w.Write([]byte("Method not allowed"))
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	case "DELETE":
+		{
+			if err := h.service.Delete(context.TODO(), bookISBN); err != nil {
+				w.Write([]byte(err.Error()))
+			}
+			w.WriteHeader(http.StatusNoContent)
+		}
 	default:
 		{
 			w.Write([]byte("Method not allowed"))
